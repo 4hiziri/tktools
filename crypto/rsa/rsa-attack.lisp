@@ -55,17 +55,9 @@ calculate mod at every step of exp."
 	    if (= c (expt (+ estimate i) e))
 	      do (return (+ estimate i)))))
 
-(defun newton-sqrt (n)
-  (flet ((func (x)
-	   (truncate (+ x (truncate n x)) 2)))
-    (loop for x1 = (expt 2 (truncate (1+ (integer-length n)) 2)) then x2
-	  for x2 = (func x1) then (func x1)
-	  when (<= x1 x2)
-	    do (return x1))))
-
 (defun fermat-rules-attack (n)
-  (loop for x = (1+ (newton-sqrt n)) then (if (< w 0) (1+ x) x)
-	for y = (newton-sqrt (- (expt x 2) n)) then (if (> w 0) (1+ y) y)
+  (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)
+	for y = (isqrt (- (expt x 2) n)) then (if (> w 0) (1+ y) y)
 	for w = (- (expt x 2) (expt y 2) n) then (- (expt x 2) (expt y 2) n)
 	when (= w 0)
 	  do (return (cons (+ x y) (- x y)))))
@@ -73,75 +65,7 @@ calculate mod at every step of exp."
 (defun gcd-attack (n1 n2)
   (gcd n1 n2))
 
-(defun cont-frac (n)
-  (loop for q = (floor n) then (truncate 1 r)
-	for r = (- n q) then (- (/ 1 r) q)
-	collect q
-	until (= r 0)))
 
-(defun const-cont-frac (nums)
-  (labels ((inner-func (q x1 x2)
-	     (+ (* q x1) x2))
-	   (inner-loop (rest n-prev n-next d-prev d-next)
-	     (if rest
-		 (inner-loop (cdr rest)
-			     n-next
-			     (inner-func (car rest) n-next n-prev)
-			     d-next
-			     (inner-func (car rest) d-next d-prev))
-		 (/ n-next d-next))))
-    (if nums
-	(inner-loop nums 0 1 1 0)
-	nil)))
+;(setf n #x9C2F6505899120906E5AFBD755C92FEC429FBA194466F06AAE484FA33CABA720205E94CE9BF5AA527224916D1852AE07915FBC6A3A52045857E0A1224C72A360C01C0CEF388F1693A746D5AFBF318C0ABF027661ACAB54E0290DFA21C3616A498210E2578121D7C23877429331D428D756B957EB41ECAB1EAAD87018C6EA3445)
+;(setf e #x466a169e8c14ac89f39b5b0357effc3e2139f9b19e28c1e299f18b54952a07a932ba5ca9f4b93b3eaa5a12c4856981ee1a31a5b47a0068ff081fa3c8c2c546feaa3619fd6ec7dd71c9a2e75f1301ec935f7a5b744a73df34d21c47592e149074a3ccef749ece475e3b6b0c8eecac7c55290ff148e9a29db8480cfe2a57801275)
 
-(defun potential-f (fracs)
-  (let ((even t)
-	(arg nil)
-	(ret nil))
-    (dolist (f fracs (reverse ret))
-      (push f arg)
-      (push (const-cont-frac
-	     (reverse arg)
-	     ;; WTF it does work?
-	     ;; paper is wrong?
-	     ;; :REFER https://www.cits.ruhr-uni-bochum.de/imperia/md/content/may/krypto2ss08/shortsecretexponents.pdf
-	     ;; (if even
-	     ;; 	 (reverse (cons (1+ f) (cdr arg)))
-	     ;; 	 (reverse arg))
-	     )
-	    ret)      
-      (setf ever (not even)))))
-
-(defun perfect-square-p (n)
-  (let ((sq-mod256  #(1 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0))
-	(mt (list (cons 9 #(1 1 0 0 1 0 0 1 0))
-		  (cons 5 #(1 1 0 0 1))
-		  (cons 7 #(1 1 1 0 1 0 0))
-		  (cons 13 #(1 1 0 1 1 0 0 0 0 1 1 0 1))
-		  (cons 17 #(1 1 1 0 1 0 0 0 1 1 0 0 0 1 0 1 1))))
-	(a (mod n (* 5 7 9 13 17))))
-    (if (/= (aref sq-mod256 (logand n #xff)) 0)
-	(dolist (mt-val mt (= (expt (newton-sqrt n) 2) n))
-	  (when (= (aref (cdr mt-val) (mod a (car mt-val))) 0)
-	    (return nil)))
-	nil)))
-
-(defun secret-key-p (n e k d)
-  (if (and (/= k 0)
-	   (= (mod (1- (* e d)) k) 0))
-      (let* ((phi (truncate (1- (* e d)) k))
-	     (s (1+ (- n phi)))
-	     (discr (- (expt s 2) (* 4 n))))
-	(when (and (>= discr 0) (perfect-square-p discr))
-	  (print (list s n discr))
-	  d))
-      nil))
-
-(defun wiener-attack (n e)
-  (let ((kd (potential-f (cont-frac (/ e n)))))
-    (dolist (kd-val kd)
-      (when (secret-key-p n e (numerator kd-val) (denominator kd-val))
-	(return (denominator kd-val))))))
-
-(setf n #x9C2F6505899120906E5AFBD755C92FEC429FBA194466F06AAE484FA33CABA720205E94CE9BF5AA527224916D1852AE07915FBC6A3A52045857E0A1224C72A360C01C0CEF388F1693A746D5AFBF318C0ABF027661ACAB54E0290DFA21C3616A498210E2578121D7C23877429331D428D756B957EB41ECAB1EAAD87018C6EA3445)
-(setf e #x466a169e8c14ac89f39b5b0357effc3e2139f9b19e28c1e299f18b54952a07a932ba5ca9f4b93b3eaa5a12c4856981ee1a31a5b47a0068ff081fa3c8c2c546feaa3619fd6ec7dd71c9a2e75f1301ec935f7a5b744a73df34d21c47592e149074a3ccef749ece475e3b6b0c8eecac7c55290ff148e9a29db8480cfe2a57801275)
