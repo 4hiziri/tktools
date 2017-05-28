@@ -7,17 +7,6 @@
 
 ;;; two-cipher text from tha same plain-text
 ;; common-modulus-attack
-(defun mod-expt (base exp modulus)
-  "more effective expotential and modulus.
-calculate mod at every step of exp."
-  (if (< exp 0) ;; if exp < 0, cannot calc mod so simply return base^exp
-      (expt base exp)
-      (loop for acc = 1 then (if (evenp e) acc (mod (* acc b) modulus))
-	    for b = (mod base modulus) then (if (evenp e) (mod (expt b 2) modulus) b)
-	    for e = exp then (if (evenp e) (/ e 2) (1- e))
-	    when (= e 0)
-	      do (return acc))))
-
 (defun extend-gcd (a b)
   "return (x . y) | ax + by = 1"
   (flet ((next-val (x1 x2 q)

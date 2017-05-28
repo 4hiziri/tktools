@@ -12,19 +12,6 @@
 ;; common-modulus-attack
 (diag "Test: common-modulus-attack")
 
-(subtest "mod-expt"
-  (let ((b 10)
-	(e 11)
-	(m 12))    
-    (is (hackrsa::mod-expt b e m)
-	(mod (expt b e) m)))
-  (is (hackrsa::mod-expt 10 -2 10)
-      1/100)
-  (is (hackrsa::mod-expt -1 10 20)
-      1)
-  (is (hackrsa::mod-expt -1 9 20)
-      19))
-
 (subtest "extend-gcd"
   (is (hackrsa::extend-gcd 101 102)
       (cons 101 -100))

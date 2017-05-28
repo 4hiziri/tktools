@@ -18,7 +18,7 @@
   :version "0.1"
   :author "4hiziri"
   :license ""
-  :depends-on (:cl-annot)
+  :depends-on (:cl-annot :cl-prime)
   :components ((:module "src"
                 :components
                 ((:file "hackrsa"))))
