@@ -26,6 +26,36 @@
 		   (return (cons (+ x2 b) (- y2 a)))
 		   (return (cons x2 y2))))))
 
+(defun mod-expt (base exp modulus)
+  "more effective expotential and modulus.
+calculate mod at every step of exp."
+  (if (< exp 0) ;; if exp < 0, cannot calc mod so simply return base^exp
+      (expt base exp)
+      (loop for acc = 1 then (if (evenp e) acc (mod (* acc b) modulus))
+	    for b = (mod base modulus) then (if (evenp e) (mod (expt b 2) modulus) b)
+	    for e = exp then (if (evenp e) (/ e 2) (1- e))
+	    when (= e 0)
+	      do (return acc))))
+
+@export
+(defun decode-string (encoded-num)
+  (labels ((inner-loop (num acc)
+	     (if (> num 0)
+		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
+		 acc)))
+    (coerce (mapcar (lambda (x) (code-char x) (inner-loop encoded-num nil))) 'string)))
+
+@export
+(defun get-private-key (e p q)
+  (let ((d-pair (extend-gcd e (* (1- p) (1- q)))))
+    (if (> (first d-pair) 0)
+	(first d-pair)
+	(first (last d-pair)))))
+
+@export
+(defun decrypto (c d n)
+  (mod-expt c d n))
+
 @export
 (defun common-modulus-attack (c1 c2 e1 e2 n)
   "If same plain-text is encrypted another e, we can attack by common-modulus-attack"
@@ -150,3 +180,11 @@ If private exponent d is small enouth, attack will be success."
 	     (g (mod edg k)))
 	(when (and (/= g 0) (secret-key-p n edg k))
 	  (return (/ dg g)))))))
+
+@export
+(defun decode (encoded-num)
+  (labels ((inner-loop (num acc)
+	     (if (> num 0)
+		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
+		 acc)))
+    (coerce (mapcar (lambda (x) (code-char x)) (inner-loop encoded-num nil)) 'string)))
