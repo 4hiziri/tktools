@@ -36,7 +36,12 @@
 	    uniq)))
 
 (defun estimate-key-length (sequence)
-  )
+  (let ((max-key-len (truncate (length sequence) 2)))
+    (loop for i from max-key-len downto 2
+	  do (let ((candidates (sort (group-seq (subseq-by-len sequence i))
+				     (lambda (x y) (> (car x) (car y))))))
+	       (when (/= (caar candidates) 1)
+		 (return (length-between-seq (cdar candidates) sequence)))))))
 
 (defun analyze-vigenere (sequence &key (key-len-min 4))
   (loop for i from (truncate (length sequence) 2) downto key-len-min
