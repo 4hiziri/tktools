@@ -36,12 +36,19 @@
 	    uniq)))
 
 (defun estimate-key-length (sequence)
-  (let ((max-key-len (truncate (length sequence) 2)))
-    (loop for i from max-key-len downto 2
-	  do (let ((candidates (sort (group-seq (subseq-by-len sequence i))
-				     (lambda (x y) (> (car x) (car y))))))
-	       (when (/= (caar candidates) 1)
-		 (return (length-between-seq (cdar candidates) sequence)))))))
+  (flet ((inner-take-repeated-pattern (freq-alist)
+	   (remove-if (lambda (x) (= (car x) 1)) freq-alist))
+	 (inner-length-repeated-pattern (freq)
+	   (length-between-seq (cdr freq) sequence)))
+    (let ((max-key-len (truncate (length sequence) 2))
+	  (candidates nil))
+      (loop for i from max-key-len downto 2
+	    do (let ((repeated-pattern (inner-take-repeated-pattern
+					(group-seq (subseq-by-len sequence i)))))
+		 (when repeated-pattern
+		   (push (cons i (mapcar #'inner-length-repeated-pattern repeated-pattern))
+			 candidates))))
+      candidates)))
 
 (defun analyze-vigenere (sequence &key (key-len-min 4))
   (loop for i from (truncate (length sequence) 2) downto key-len-min
