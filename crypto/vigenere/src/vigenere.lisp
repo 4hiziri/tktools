@@ -43,6 +43,7 @@
 	    uniq)))
 
 (defun pattern-by-length (sequence pattern-length)
+  "(pattern-freq '(1 2 3 1 2 3 1 2 3) 2) => ((3 1) (1 2) (2 3))"
   (remove-duplicates (subseq-by-len sequence pattern-length) :test #'equal))
 
 @export
