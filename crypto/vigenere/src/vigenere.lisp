@@ -35,10 +35,15 @@
 
 @export
 (defun group-seq (list)
-  "This return tuple which has item and num of item in sequence. => (num-of-item item)"
+  "This return tuple which has item and num of item in sequence. => (num-of-item item)
+
+(1 1 1 2 2 3) => ((3 . 1) (2 . 2) (1 . 3))"
   (let ((uniq (remove-duplicates list :test #'equal)))
     (mapcar (lambda (x) (cons (count x list :test #'equal) x))
 	    uniq)))
+
+(defun pattern-by-length (sequence pattern-length)
+  (remove-duplicates (subseq-by-len sequence pattern-length) :test #'equal))
 
 @export
 (defun estimate-key-length (sequence)
