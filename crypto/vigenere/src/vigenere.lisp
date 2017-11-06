@@ -44,9 +44,18 @@
     (mapcar (lambda (x) (cons (count x list :test #'equal) x))
 	    uniq)))
 
+@export
 (defun pattern-by-length (sequence pattern-length)
   "(pattern-freq '(1 2 3 1 2 3 1 2 3) 2) => ((3 1) (1 2) (2 3))"
   (remove-duplicates (subseq-by-len sequence pattern-length) :test #'equal))
+
+@export
+(defun possible-span (sequence pattern-length)
+  (let ((possible-span-list nil))
+    (dolist (pat (pattern-by-length sequence pattern-length) possible-span-list)
+      (let ((pos (position-seq-list pat sequence)))
+	(when (/= (length pos) 1)
+	  (push pos possible-span-list))))))
 
 @export
 (defun estimate-key-length (sequence)
