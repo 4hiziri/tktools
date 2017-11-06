@@ -19,10 +19,12 @@
   "This return position of `seq1' in `seq2'.
    (position-seq-list '(1 2) '(1 2 3 4 1 2 1 2 3 4 1 4 5 1)) => (0 4 6)"
   (labels ((inner-search-pos (pos acc)
-	     (let ((next-pos (search seq1 seq2 :start2 pos)))
-	       (if next-pos
-		   (inner-search-pos (1+ (+ next-pos (length seq1))) (cons next-pos acc))
-		   (reverse acc)))))
+	     (if (< pos (length seq2))
+		 (let ((next-pos (search seq1 seq2 :start2 pos)))
+		   (if next-pos
+		       (inner-search-pos (1+ (+ next-pos (length seq1))) (cons next-pos acc))
+		       (reverse acc)))
+		 (reverse acc))))
     (inner-search-pos 0 nil)))
 
 @export
