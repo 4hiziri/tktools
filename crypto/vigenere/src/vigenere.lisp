@@ -58,13 +58,23 @@
 	  (push pos possible-span-list))))))
 
 @export
+(defun pos-span (pos-list)
+  (mapcar (lambda (x) (- (second x) (first x)))
+	  (subseq-by-len pos-list 2)))
+
+@export
+(defun possible-length (sequence pat-len)
+  (mapcar (lambda (spans) (apply #'gcd spans))
+	  (mapcar #'pos-span (possible-position sequence pat-len))))
+
+@export
 (defun estimate-key-length (sequence)
   (let ((max-pat-len (truncate (length sequence) 2)))
     (loop for i from max-pat-len downto 2
 	  for pos = (possible-position sequence i)
 	  when (funcall (complement #'null) pos)
 	    collect (list (cons :pat-len i)
-			  (cons :pos (possible-position sequence i))))))
+			  (cons :pos (possible-length sequence i))))))
 
 @export
 (defun str-byte (string)
