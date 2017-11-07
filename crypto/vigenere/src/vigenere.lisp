@@ -50,7 +50,7 @@
   (remove-duplicates (subseq-by-len sequence pattern-length) :test #'equal))
 
 @export
-(defun possible-span (sequence pattern-length)
+(defun possible-position (sequence pattern-length)
   (let ((possible-span-list nil))
     (dolist (pat (pattern-by-length sequence pattern-length) possible-span-list)
       (let ((pos (position-seq-list pat sequence)))
