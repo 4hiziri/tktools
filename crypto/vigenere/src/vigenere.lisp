@@ -65,11 +65,3 @@
 	  when (funcall (complement #'null) pos)
 	    collect (list (cons :pat-len i)
 			  (cons :pos (possible-position sequence i))))))
-
-@export
-(defun analyze-vigenere (sequence &key (key-len-min 4))
-  (loop for i from (truncate (length sequence) 2) downto key-len-min
-	when (some (lambda (x) (/= (car x) 1))
-		   (group-seq (subseq-by-len sequence i)))
-	  collect (remove-if (lambda (x) (= (car x) 1))
-			     (group-seq (subseq-by-len sequence i)))))
