@@ -74,7 +74,7 @@
 	  for pos = (possible-position sequence i)
 	  when (funcall (complement #'null) pos)
 	    collect (list (cons :pat-len i)
-			  (cons :pos (possible-length sequence i))))))
+			  (cons :len (possible-length sequence i))))))
 
 @export
 (defun str-byte (string)
