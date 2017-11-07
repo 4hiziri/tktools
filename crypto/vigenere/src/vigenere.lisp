@@ -59,19 +59,12 @@
 
 @export
 (defun estimate-key-length (sequence)
-  (flet ((inner-take-repeated-pattern (freq-alist)
-	   (remove-if (lambda (x) (= (car x) 1)) freq-alist))
-	 (inner-length-repeated-pattern (freq)
-	   (length-between-seq (cdr freq) sequence)))
-    (let ((max-key-len (truncate (length sequence) 2))
-	  (candidates nil))
-      (loop for i from max-key-len downto 2
-	    do (let ((repeated-pattern (inner-take-repeated-pattern
-					(group-seq (subseq-by-len sequence i)))))
-		 (when repeated-pattern
-		   (push (cons i (mapcar #'inner-length-repeated-pattern repeated-pattern))
-			 candidates))))
-      candidates)))
+  (let ((max-pat-len (truncate (length sequence) 2)))
+    (loop for i from max-pat-len downto 2
+	  for pos = (possible-position sequence i)
+	  when (funcall (complement #'null) pos)
+	    collect (list (cons :pat-len i)
+			  (cons :pos (possible-position sequence i))))))
 
 @export
 (defun analyze-vigenere (sequence &key (key-len-min 4))
