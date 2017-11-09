@@ -14,12 +14,12 @@
 
 (subtest "extend-gcd"
   (is (hackrsa::extend-gcd 101 102)
-      (cons 101 -100))
+      (list 1 -1 1))
   (let* ((a 103)
 	 (b 102)
 	 (ret (hackrsa::extend-gcd a b)))
-    (is (+ (* a (car ret)) (* b (cdr ret)))
-	1)))
+    (is (+ (* a (second ret)) (* b (third ret)))
+	(first ret))))
 
 
 (subtest "common-modulus-attack"
