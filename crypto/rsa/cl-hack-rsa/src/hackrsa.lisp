@@ -55,7 +55,9 @@ calculate mod at every step of exp."
 	(inner-mod-expt base exp modulus)
 	(/ 1 (inner-mod-expt base (- exp) modulus)))))
 
-;; TODO: (defun mod-inv (a m)  )
+(defun mod-inv (a m)
+  (let ((egcd (extend-gcd a m)))
+    (mod (second egcd) m)))
 
 @export
 (defun decode-string (encoded-num)
@@ -82,7 +84,7 @@ calculate mod at every step of exp."
   (flet ((inner-solve c1 c2 s1 s2
 	   (mod (* (expt c1 (first s))
 		   (expt c2 (second s)))
-	 n))))
+		n))))
   (let* ((s (cdr (extend-gcd e1 e2)))
 	 (s1 (second s))
 	 (s2 (third s)))
