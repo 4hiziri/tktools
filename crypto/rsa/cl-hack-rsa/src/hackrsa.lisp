@@ -7,6 +7,8 @@
 
 ;;; two-cipher text from tha same plain-text
 ;; common-modulus-attack
+
+@export
 (defun extend-gcd (a b)
   "return (x . y) | ax + by = 1"
   (flet ((next-val (x1 x2 q)
@@ -26,6 +28,7 @@
 		   (return (cons (+ x2 b) (- y2 a)))
 		   (return (cons x2 y2))))))
 
+@export
 (defun mod-expt (base exp modulus)
   "more effective expotential and modulus.
 calculate mod at every step of exp."
@@ -180,11 +183,3 @@ If private exponent d is small enouth, attack will be success."
 	     (g (mod edg k)))
 	(when (and (/= g 0) (secret-key-p n edg k))
 	  (return (/ dg g)))))))
-
-@export
-(defun decode (encoded-num)
-  (labels ((inner-loop (num acc)
-	     (if (> num 0)
-		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
-		 acc)))
-    (coerce (mapcar (lambda (x) (code-char x)) (inner-loop encoded-num nil)) 'string)))
