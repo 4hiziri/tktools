@@ -65,7 +65,9 @@ calculate mod at every step of exp."
 	     (if (> num 0)
 		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
 		 acc)))
-    (coerce (mapcar (lambda (x) (code-char x) (inner-loop encoded-num nil))) 'string)))
+    (coerce (mapcar (lambda (x) (code-char x))
+		    (inner-loop encoded-num nil))
+	    'string)))
 
 @export
 (defun get-private-key (e p q)
@@ -81,11 +83,11 @@ calculate mod at every step of exp."
 @export
 (defun common-modulus-attack (c1 c2 e1 e2 n)
   "If the same plain-texts are encrypted another e, we can attack by common-modulus-attack"
-  (flet ((inner-solve c1 c2 s1 s2
-	   (mod (* (expt c1 (first s))
-		   (expt c2 (second s)))
+  (flet ((inner-solve (c1 c2 s1 s2)
+	   (mod (* (expt c1 s1)
+		   (expt c2 s2))
 		n)))
-    (let* ((s (cdr (extend-gcd e1 e2)))
+    (let* ((s (extend-gcd e1 e2))
 	   (s1 (second s))
 	   (s2 (third s)))
       (cond ((< s1 0) (inner-solve (mod-inv c1 n) c2 (- s1) s2))
