@@ -84,13 +84,13 @@ calculate mod at every step of exp."
   (flet ((inner-solve c1 c2 s1 s2
 	   (mod (* (expt c1 (first s))
 		   (expt c2 (second s)))
-		n))))
-  (let* ((s (cdr (extend-gcd e1 e2)))
-	 (s1 (second s))
-	 (s2 (third s)))
-    (cond ((< s1 0) (inner-solve (mod-inv c1 n) c2 (- s1) s2))
-	  ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
-	  (t (inner-solve c1 c2 s1 s2)))))
+		n)))
+    (let* ((s (cdr (extend-gcd e1 e2)))
+	   (s1 (second s))
+	   (s2 (third s)))
+      (cond ((< s1 0) (inner-solve (mod-inv c1 n) c2 (- s1) s2))
+	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
+	    (t (inner-solve c1 c2 s1 s2))))))
 
 ;;; low public exponent attack
 
