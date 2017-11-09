@@ -61,11 +61,13 @@ calculate mod at every step of exp."
 
 @export
 (defun common-modulus-attack (c1 c2 e1 e2 n)
-  "If same plain-text is encrypted another e, we can attack by common-modulus-attack"
+  "If the same plain-texts are encrypted another e, we can attack by common-modulus-attack"
   (let ((s (extend-gcd e1 e2)))
     (mod (* (expt c1 (car s))
 	    (expt c2 (cdr s)))
 	 n)))
+
+
 ;;; low public exponent attack
 
 ;; :TODO how to calculate nth-rt
