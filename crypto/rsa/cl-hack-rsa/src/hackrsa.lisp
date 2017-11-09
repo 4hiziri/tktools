@@ -5,9 +5,9 @@
 
 (cl-annot:enable-annot-syntax)
 
+
 ;;; two-cipher text from tha same plain-text
 ;; common-modulus-attack
-
 
 ;; (defun extend-gcd (a b)
 ;;   "return (x . y) | ax + by = 1"
@@ -84,8 +84,8 @@ calculate mod at every step of exp."
 (defun common-modulus-attack (c1 c2 e1 e2 n)
   "If the same plain-texts are encrypted another e, we can attack by common-modulus-attack"
   (flet ((inner-solve (c1 c2 s1 s2)
-	   (mod (* (expt c1 s1)
-		   (expt c2 s2))
+	   (mod (* (mod-expt c1 s1 n)
+		   (mod-expt c2 s2 n))
 		n)))
     (let* ((s (extend-gcd e1 e2))
 	   (s1 (second s))
