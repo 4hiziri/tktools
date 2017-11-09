@@ -28,6 +28,15 @@
 		   (return (cons (+ x2 b) (- y2 a)))
 		   (return (cons x2 y2))))))
 
+(defun extend-gcd (a b)
+  (if (= a 0)
+      (list b 0 1)
+      (let* ((egcd (extend-gcd (mod b a) a))
+	     (g (first egcd))
+	     (x (third egcd))
+	     (y (second egcd)))
+	(list g (- x (* y (truncate b a))) y))))
+
 ;; TODO: add check integer
 @export
 (defun mod-expt (base exp modulus)
