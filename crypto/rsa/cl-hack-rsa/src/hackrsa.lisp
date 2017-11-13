@@ -29,7 +29,6 @@ x = y', y = x' - (truncato a b)y'
 	     (y (third egcd)))
 	(list g y (- x (* y (truncate a b)))))))
 
-;; TODO: add check integer
 @export
 (defun mod-expt (base exp modulus)
   "more effective expotential and modulus.
