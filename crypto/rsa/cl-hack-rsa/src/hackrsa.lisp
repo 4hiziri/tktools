@@ -5,10 +5,6 @@
 
 (cl-annot:enable-annot-syntax)
 
-
-;;; two-cipher text from tha same plain-text
-;; common-modulus-attack
-
 @export
 (defun extend-gcd (a b)
   "(gcd(a,b), x, y) | ax + by = gcd(a, b)
@@ -68,13 +64,15 @@ calculate mod at every step of exp."
 	    'string)))
 
 @export
-(defun get-private-key (e p q)
+(defun private-key (e p q)
   (mod-inv e (* (1- p) (1- q))))
 
 @export
 (defun decrypto (c d n)
   (mod-expt c d n))
 
+;;; common-modulus-attack
+;; two-cipher texts from tha same plain-text and two different e
 @export
 (defun common-modulus-attack (c1 c2 e1 e2 n)
   "If the same plain-texts are encrypted another e, we can attack by common-modulus-attack"

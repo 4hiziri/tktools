@@ -105,4 +105,20 @@
     (is (wiener-attack n e)
 	d)))
 
+(diag "Test: misc")
+(subtest "private-key"
+  (let ((e 11)
+	(p 13)
+	(q 29))
+    (is (hackrsa:private-key e p q)
+	275)))
+
+(subtest "decrypto"
+  (let ((n 377)
+        (d 275)       
+	(m 97)
+	(c 89))
+    (is (hackrsa:decrypto c d n)
+	m)))
+
 (finalize)
