@@ -38,6 +38,7 @@ x = y', y = x' - (truncato a b)y'
 (defun mod-expt (base exp modulus)
   "more effective expotential and modulus.
 calculate mod at every step of exp."
+  (assert (integerp exp))
   (labels ((inner-mod-expt (base exp modulus)
 	     (if (< exp 0) ;; if exp < 0, cannot calc mod so simply return base^exp
 		 (expt base exp)
@@ -50,10 +51,12 @@ calculate mod at every step of exp."
 	(inner-mod-expt base exp modulus)
 	(/ 1 (inner-mod-expt base (- exp) modulus)))))
 
+@export
 (defun mod-inv (a m)
   (let ((egcd (extend-gcd a m)))
     (mod (second egcd) m)))
 
+;; TODO: write test
 @export
 (defun decode-string (encoded-num)
   (labels ((inner-loop (num acc)
@@ -66,10 +69,7 @@ calculate mod at every step of exp."
 
 @export
 (defun get-private-key (e p q)
-  (let ((d-pair (cdr (extend-gcd e (* (1- p) (1- q))))))
-    (if (> (first d-pair) 0)
-	(first d-pair)
-	(first (last d-pair)))))
+  (mod-inv e (* (1- p) (1- q))))
 
 @export
 (defun decrypto (c d n)
@@ -89,9 +89,9 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
-;;; low public exponent attack
 
-;; :TODO how to calculate nth-rt
+;;; low public exponent attack
+;; TODO: nth-root use mfpr, but sbcl only
 @export
 (defun low-public-exponent-attack (c e &optional (limit 1000000))
   "If e is too small and m^e < n, this is success"
@@ -105,6 +105,7 @@ calculate mod at every step of exp."
 
 ;;; directly calculate p * q = n
 ;; fermat-rules
+;; TODO: profiling
 @export
 (defun fermat-rules-attack (n)
   (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)

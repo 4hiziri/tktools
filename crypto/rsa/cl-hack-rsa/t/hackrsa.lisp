@@ -5,15 +5,16 @@
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :hackrsa)' in your Lisp.
 
+;; TODO check 5am
+
 (plan nil)
 (setf prove:*enable-colors* t)
 (diag "Run Test")
 
-;; common-modulus-attack
 (diag "Test: common-modulus-attack")
 
 (subtest "extend-gcd"
-  (is (hackrsa::extend-gcd 101 102)
+  (is (hackrsa:extend-gcd 101 102)
       (list 1 -1 1))
   (let* ((a 103)
 	 (b 102)
@@ -21,6 +22,12 @@
     (is (+ (* a (second ret)) (* b (third ret)))
 	(first ret))))
 
+(subtest "mod-inv"
+  (let ((base 31)
+	(num 101))
+    (is (mod (* (hackrsa:mod-inv num base) num)
+	     base)
+	1)))
 
 (subtest "common-modulus-attack"
   (let ((e1 11)
@@ -32,7 +39,6 @@
     (is (print (common-modulus-attack c1 c2 e1 e2 n1))
 	424311244315114354)))
 
-;; low-public-exponent-attack
 (diag "Test: low-public-exponent-attack")
 (subtest "low-public-exponent-attack"
   (let ((e 13)
@@ -46,11 +52,11 @@
 (diag "Test: fermat-rules-attack")
 (skip 1 "Too much time")
 ;; (subtest "fermat-rules-attack"
-;;   (let* ((mid (* 2996863034895 (expt 2 1290000)))
-;; 	 (p (1+ mid))
-;; 	 (q (1- mid)))
-;;     (is (fermat-rules-attack (* p q))
-;; 	(cons p q))))
+;;    (let* ((mid (* 2996863034895 (expt 2 1290000)))
+;; 	  (p (1+ mid))
+;; 	  (q (1- mid)))
+;;      (is (fermat-rules-attack (* p q))
+;; 	 (cons p q))))
 
 ;; wiener-attack
 (diag "Test: winer-attack")
