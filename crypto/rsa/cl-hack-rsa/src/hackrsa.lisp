@@ -9,34 +9,29 @@
 ;;; two-cipher text from tha same plain-text
 ;; common-modulus-attack
 
-;; (defun extend-gcd (a b)
-;;   "return (x . y) | ax + by = 1"
-;;   (flet ((next-val (x1 x2 q)
-;;	   (- x1 (* x2 q))))
-;;     (loop for q = (/ (- a (mod a b)) b) then (/ (- z1 (mod z1 z2)) z2)
-;;	  for ztmp = (next-val a b q) then (next-val z1 z2 q)
-;;	  for z1 = a then z2
-;;	  for z2 = b then ztmp
-;;	  for xtmp = (next-val 1 0 q) then (next-val x1 x2 q)
-;;	  for x1 = 1 then x2
-;;	  for x2 = 0 then xtmp
-;;	  for ytmp = (next-val 0 1 q) then (next-val y1 y2 q)
-;;	  for y1 = 0 then y2
-;;	  for y2 = 1 then ytmp
-;;	  when (= z2 1)
-;;	    do (if (< x2 0)
-;;		   (return (cons (+ x2 b) (- y2 a)))
-;;		   (return (cons x2 y2))))))
-
 @export
 (defun extend-gcd (a b)
-  (if (= a 0)
-      (list b 0 1)
-      (let* ((egcd (extend-gcd (mod b a) a))
+  "(gcd(a,b), x, y) | ax + by = gcd(a, b)
+
+gcd(a, b) = gcd(b, a mod b)
+ax + by = gcd(a, b), x and y exists
+gcd(b, a mod b) = bx' + (a mod b)y'
+then
+bx' + (a mod b)y' = gcd(a, b) ... (1)
+a mod b = a - (truncate a b) * b ... (2)
+then (2) into (1)
+bx' + ay' - (truncate a b) * b y' = gcd(a, b)
+ay' + b(x' - (truncate a b)y') = gcd(a, b)
+compare ax + by = gcd(a, b),
+x = y', y = x' - (truncato a b)y'
+"
+  (if (= b 0)
+      (list a 1 0)
+      (let* ((egcd (extend-gcd b (mod a b)))
 	     (g (first egcd))
-	     (x (third egcd))
-	     (y (second egcd)))
-	(list g (- x (* y (truncate b a))) y))))
+	     (x (second egcd))
+	     (y (third egcd)))
+	(list g y (- x (* y (truncate a b)))))))
 
 ;; TODO: add check integer
 @export
