@@ -107,7 +107,7 @@ calculate mod at every step of exp."
 (defun fermat-rules-attack (n)
   (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)
 	for y = (isqrt (- (expt x 2) n)) then (if (> w 0) (1+ y) y)
-	for w = (- (expt x 2) (expt y 2) n) then (- (expt x 2) (expt y 2) n)
+	for w = (- (expt x 2) (expt y 2) n)
 	when (= w 0)
 	  do (return (cons (+ x y) (- x y)))))
 
@@ -116,8 +116,6 @@ calculate mod at every step of exp."
 @export
 (defun gcd-attack (n1 n2)
   (gcd n1 n2))
-
-;; :TODO メルセンヌ素数
 
 ;;; low private exponent attack
 ;; wiener-attack
