@@ -86,6 +86,21 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
+#+sbcl
+(defun sbcl-n-root (x n &optional (prec 1024))
+  (require 'sb-mpfr)
+  (sb-mpfr:coerce
+   (sb-mpfr:with-precision prec
+     (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
+		     n))
+   'double-float))
+
+(defun n-root (x n)
+  "Return nth root of x"
+  #-sbcl
+  (expt x (/ 1d0 n))
+  #+sbcl  
+  (sbcl-n-root x n))
 
 ;;; low public exponent attack
 ;; TODO: nth-root use mfpr, but sbcl only
