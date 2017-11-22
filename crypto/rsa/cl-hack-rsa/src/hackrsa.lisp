@@ -51,7 +51,6 @@ calculate mod at every step of exp."
   (let ((egcd (extend-gcd a m)))
     (mod (second egcd) m)))
 
-;; TODO: write test
 @export
 (defun decode-string (encoded-num)
   (labels ((inner-loop (num acc)
@@ -116,7 +115,6 @@ calculate mod at every step of exp."
 
 ;;; directly calculate p * q = n
 ;; fermat-rules
-;; TODO: profiling
 @export
 (defun fermat-rules-attack (n)
   (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)
