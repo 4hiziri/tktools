@@ -103,11 +103,10 @@ calculate mod at every step of exp."
   (sbcl-n-root x n))
 
 ;;; low public exponent attack
-;; TODO: nth-root use mfpr, but sbcl only
 @export
 (defun low-public-exponent-attack (c e &optional (limit 1000000))
   "If e is too small and m^e < n, this is success"
-  (let ((estimate (round (expt c (/ 1d0 e)))))
+  (let ((estimate (round (n-root c e))))
     (loop for i from 0 to limit
 	  if (= c (expt (- estimate i) e))
 	    do (return (- estimate i))
