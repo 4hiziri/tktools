@@ -85,19 +85,23 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
+;; TODO: load error
 #+sbcl
-(defun sbcl-n-root (x n &optional (prec 1024))
-  (require 'sb-mpfr)
+(print "Hello")
+#+sbcl
+(require 'sb-mpfr)
+#+sbcl
+(defun sbcl-n-root (x n &optional (prec 1024))  
   (sb-mpfr:coerce
    (sb-mpfr:with-precision prec
      (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
 		     n))
-   'double-float))
+   'integer))
 
 (defun n-root (x n)
   "Return nth root of x"
   #-sbcl
-  (expt x (/ 1d0 n))
+  (round (expt x (/ 1d0 n)))
   #+sbcl  
   (sbcl-n-root x n))
 
@@ -214,3 +218,44 @@ If private exponent d is small enouth, attack will be success."
 	     (g (mod edg k)))
 	(when (and (/= g 0) (secret-key-p n edg k))
 	  (return (/ dg g)))))))
+
+;; hastad's broadcast attack
+(defun zip (al bl) ;; TODO: extract util or search
+  (labels ((inner-loop (al bl acc)
+	     (if (or (null al)
+		     (null bl))
+		 (reverse acc)
+		 (inner-loop (rest al)
+			     (rest bl)
+			     (cons (cons (first al)
+					 (first bl))
+				   acc)))))
+    (inner-loop al bl nil)))
+
+(defun chinese-remainder-theorem (n_list a_list)
+  "a0 = x mod n0
+   ...
+   ai = x mod ni
+
+   return x mod n0 * n1 * ... * ni"
+  (labels ((congruence-one (n modular)
+	     (let ((egcd (extend-gcd modular n)))
+	       (* n (third egcd))))
+	   (positivate (n adder)
+	     (if (> n 0)
+		 n
+		 (positivate (+ n adder) adder))))
+    (let ((reduced (reduce #'* n_list)))
+      (positivate
+       (reduce #'+
+	       (mapcar (lambda (xa) (* (first xa)
+				       (rest xa)))
+		       (zip (mapcar (lambda (n) (congruence-one (/ reduced n) n))
+				    n_list)
+			    a_list)))
+       reduced))))
+
+@export
+(defun hastads-broadcast-attack (n_list e c_list)
+  (let ((me (chinese-remainder-theorem n_list c_list)))
+    (round (n-root me e))))
