@@ -51,7 +51,6 @@ calculate mod at every step of exp."
   (let ((egcd (extend-gcd a m)))
     (mod (second egcd) m)))
 
-;; TODO: write test
 @export
 (defun decode-string (encoded-num)
   (labels ((inner-loop (num acc)
@@ -86,13 +85,31 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
+;; TODO: load error
+#+sbcl
+(print "Hello")
+#+sbcl
+(require 'sb-mpfr)
+#+sbcl
+(defun sbcl-n-root (x n &optional (prec 1024))  
+  (sb-mpfr:coerce
+   (sb-mpfr:with-precision prec
+     (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
+		     n))
+   'integer))
+
+(defun n-root (x n)
+  "Return nth root of x"
+  #-sbcl
+  (round (expt x (/ 1d0 n)))
+  #+sbcl  
+  (sbcl-n-root x n))
 
 ;;; low public exponent attack
-;; TODO: nth-root use mfpr, but sbcl only
 @export
 (defun low-public-exponent-attack (c e &optional (limit 1000000))
   "If e is too small and m^e < n, this is success"
-  (let ((estimate (round (expt c (/ 1d0 e)))))
+  (let ((estimate (round (n-root c e))))
     (loop for i from 0 to limit
 	  if (= c (expt (- estimate i) e))
 	    do (return (- estimate i))
@@ -102,7 +119,6 @@ calculate mod at every step of exp."
 
 ;;; directly calculate p * q = n
 ;; fermat-rules
-;; TODO: profiling
 @export
 (defun fermat-rules-attack (n)
   (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)
@@ -202,3 +218,44 @@ If private exponent d is small enouth, attack will be success."
 	     (g (mod edg k)))
 	(when (and (/= g 0) (secret-key-p n edg k))
 	  (return (/ dg g)))))))
+
+;; hastad's broadcast attack
+(defun zip (al bl) ;; TODO: extract util or search
+  (labels ((inner-loop (al bl acc)
+	     (if (or (null al)
+		     (null bl))
+		 (reverse acc)
+		 (inner-loop (rest al)
+			     (rest bl)
+			     (cons (cons (first al)
+					 (first bl))
+				   acc)))))
+    (inner-loop al bl nil)))
+
+(defun chinese-remainder-theorem (n_list a_list)
+  "a0 = x mod n0
+   ...
+   ai = x mod ni
+
+   return x mod n0 * n1 * ... * ni"
+  (labels ((congruence-one (n modular)
+	     (let ((egcd (extend-gcd modular n)))
+	       (* n (third egcd))))
+	   (positivate (n adder)
+	     (if (> n 0)
+		 n
+		 (positivate (+ n adder) adder))))
+    (let ((reduced (reduce #'* n_list)))
+      (positivate
+       (reduce #'+
+	       (mapcar (lambda (xa) (* (first xa)
+				       (rest xa)))
+		       (zip (mapcar (lambda (n) (congruence-one (/ reduced n) n))
+				    n_list)
+			    a_list)))
+       reduced))))
+
+@export
+(defun hastads-broadcast-attack (n_list e c_list)
+  (let ((me (chinese-remainder-theorem n_list c_list)))
+    (round (n-root me e))))
