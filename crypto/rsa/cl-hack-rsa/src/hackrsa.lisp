@@ -5,6 +5,7 @@
 
 (cl-annot:enable-annot-syntax)
 
+;; Util of math
 @export
 (defun extend-gcd (a b)
   "(gcd(a,b), x, y) | ax + by = gcd(a, b)
@@ -51,43 +52,9 @@ calculate mod at every step of exp."
   (let ((egcd (extend-gcd a m)))
     (mod (second egcd) m)))
 
-@export
-(defun decode-string (encoded-num)
-  (labels ((inner-loop (num acc)
-	     (if (> num 0)
-		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
-		 acc)))
-    (coerce (mapcar (lambda (x) (code-char x))
-		    (inner-loop encoded-num nil))
-	    'string)))
-
-@export
-(defun private-key (e p q)
-  (mod-inv e (* (1- p) (1- q))))
-
-@export
-(defun decrypto (c d n)
-  (mod-expt c d n))
-
-;;; common-modulus-attack
-;; two-cipher texts from tha same plain-text and two different e
-@export
-(defun common-modulus-attack (c1 c2 e1 e2 n)
-  "If the same plain-texts are encrypted another e, we can attack by common-modulus-attack"
-  (flet ((inner-solve (c1 c2 s1 s2)
-	   (mod (* (mod-expt c1 s1 n)
-		   (mod-expt c2 s2 n))
-		n)))
-    (let* ((s (extend-gcd e1 e2))
-	   (s1 (second s))
-	   (s2 (third s)))
-      (cond ((< s1 0) (inner-solve (mod-inv c1 n) c2 (- s1) s2))
-	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
-	    (t (inner-solve c1 c2 s1 s2))))))
-
 #+sbcl
 (require :sb-mpfr)
-
+@export
 (defun n-root (x n &optional (prec 1024))
   "Return nth root of x"
   #-sbcl
@@ -101,73 +68,10 @@ calculate mod at every step of exp."
 		     n))
    'integer))
 
-;;; low public exponent attack
-@export
-(defun low-public-exponent-attack (c e &optional (limit 1000000))
-  "If e is too small and m^e < n, this is success"
-  (let ((estimate (round (n-root c e))))
-    (loop for i from 0 to limit
-	  if (= c (expt (- estimate i) e))
-	    do (return (- estimate i))
-	  else
-	    if (= c (expt (+ estimate i) e))
-	      do (return (+ estimate i)))))
-
-;;; directly calculate p * q = n
-;; fermat-rules
-@export
-(defun fermat-rules-attack (n)
-  (flet ((init-a (n)
-	   ;; big-integer raise overflow at sqrt
-	   ;; but isqrt apply floor-function to answer
-	   ;; need check for apply ceil-function
-	   (let ((sqrt-n (isqrt n)))
-	     (if (perfect-square-p n)
-		 sqrt-n
-		 (1+ sqrt-n)))))
-    (loop for a from (init-a n) to (/ (+ n 6) 9)
-	  for square-b = (- (expt a 2) n) then (- (expt a 2) n)
-	  when (perfect-square-p square-b)
-	    do (return (cons (+ a (isqrt square-b)) (- a (isqrt square-b)))))))
-
-;; Two n are shared prime is contained, we can calculate other prime
-;; GCD
 @export
 (defun gcd-attack (n1 n2)
+  "Two n are shared prime is contained, it can calculate other prime."
   (gcd n1 n2))
-
-;;; low private exponent attack
-;; wiener-attack
-(defun continued-fraction (n)
-  (loop for q = (floor n) then (truncate 1 r)
-	for r = (- n q) then (- (/ 1 r) q)
-	collect q
-	until (= r 0)))
-
-(defun const-continued-fraction (nums)
-  (labels ((inner-func (q x1 x2)
-	     (+ (* q x1) x2))
-	   (inner-loop (rest n-prev n-next d-prev d-next)
-	     (if rest
-		 (inner-loop (cdr rest)
-			     n-next
-			     (inner-func (car rest) n-next n-prev)
-			     d-next
-			     (inner-func (car rest) d-next d-prev))
-		 (/ n-next d-next))))
-    (if nums
-	(inner-loop nums 0 1 1 0)
-	nums)))
-
-(defun guess-f (fracs)
-  (loop repeat (length fracs)
-	for e from 1
-	for i = (subseq fracs 0 e) then (subseq fracs 0 e)
-	if (oddp e)
-	  collect (let ((rev-i (reverse i)))
-		    (const-continued-fraction (reverse (cons (1+ (car rev-i)) (cdr rev-i)))))
-	else
-	  collect (const-continued-fraction i)))
 
 (defun perfect-square-p (n)
   "if n's sqrt is integer, return t"
@@ -200,29 +104,26 @@ calculate mod at every step of exp."
 	    (return nil)))
 	nil)))
 
-(defun secret-key-p (n edg k)
-  "If d is secret-key, return t"
-  (if (/= k 0)
-      (let* ((phi (truncate edg k))
-	     (s (/ (1+ (- n phi)) 2)))
-	(when (and (integerp s) (fast-perfect-square-p (- (expt s 2) n)))
-	  t))
-      nil))
+;; Util of RSA
+@export
+(defun decode-string (encoded-num)
+  (labels ((inner-loop (num acc)
+	     (if (> num 0)
+		 (inner-loop (truncate num (expt 2 8)) (cons (mod num (expt 2 8)) acc))
+		 acc)))
+    (coerce (mapcar (lambda (x) (code-char x))
+		    (inner-loop encoded-num nil))
+	    'string)))
 
 @export
-(defun wiener-attack (n e)
-  "This function attacks publick-key(n, e).
-If private exponent d is small enouth, attack will be success."
-  (dolist (i-kdg (guess-f (continued-fraction (/ e n))))
-    (when (/= i-kdg 0)
-      (let* ((dg (denominator i-kdg))
-	     (k (numerator i-kdg))
-	     (edg (* dg e))
-	     (g (mod edg k)))
-	(when (and (/= g 0) (secret-key-p n edg k))
-	  (return (/ dg g)))))))
+(defun private-key (e p q)
+  (mod-inv e (* (1- p) (1- q))))
 
-;; hastad's broadcast attack
+@export
+(defun decrypto (c d n)
+  (mod-expt c d n))
+
+;; Util
 (defun zip (al bl) ;; TODO: extract util or search
   (labels ((inner-loop (al bl acc)
 	     (if (or (null al)
@@ -234,31 +135,3 @@ If private exponent d is small enouth, attack will be success."
 					 (first bl))
 				   acc)))))
     (inner-loop al bl nil)))
-
-(defun chinese-remainder-theorem (n_list a_list)
-  "a0 = x mod n0
-   ...
-   ai = x mod ni
-
-   return x mod n0 * n1 * ... * ni"
-  (labels ((congruence-one (n modular)
-	     (let ((egcd (extend-gcd modular n)))
-	       (* n (third egcd))))
-	   (positivate (n adder)
-	     (if (> n 0)
-		 n
-		 (positivate (+ n adder) adder))))
-    (let ((reduced (reduce #'* n_list)))
-      (positivate
-       (reduce #'+
-	       (mapcar (lambda (xa) (* (first xa)
-				       (rest xa)))
-		       (zip (mapcar (lambda (n) (congruence-one (/ reduced n) n))
-				    n_list)
-			    a_list)))
-       reduced))))
-
-@export
-(defun hastads-broadcast-attack (n_list e c_list)
-  (let ((me (chinese-remainder-theorem n_list c_list)))
-    (round (n-root me e))))
