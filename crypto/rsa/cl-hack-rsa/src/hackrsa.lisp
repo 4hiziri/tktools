@@ -85,25 +85,21 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
-;; FIXME: load error
-;; (princ *package*)
 #+sbcl
 (require :sb-mpfr)
-#+sbcl
-(defun sbcl-n-root (x n &optional (prec 1024))
+
+(defun n-root (x n &optional (prec 1024))
+  "Return nth root of x"
+  #-sbcl
+  (progn
+    (princ "n-root doesn't work, especialy when n is very large. Please use sbcl.")
+    (round (expt x (/ 1d0 n)))) ;; Need mpfr bindings for other impls
+  #+sbcl
   (sb-mpfr:coerce
    (sb-mpfr:with-precision prec
      (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
 		     n))
    'integer))
-
-(defun n-root (x n)
-  "Return nth root of x"
-  #-sbcl
-  (round (expt x (/ 1d0 n)))
-  #+sbcl
-  (sbcl-n-root x n)
-  )
 
 ;;; low public exponent attack
 @export
