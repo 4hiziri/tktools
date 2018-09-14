@@ -34,6 +34,7 @@ WARN: This test returns t against pseudo-prime and Carmichael number but these n
       t
       nil))
 
+@export
 (defun prime-p (p)
   (if (= p 1)
       nil
