@@ -86,20 +86,23 @@ calculate mod at every step of exp."
 	    (t (inner-solve c1 c2 s1 s2))))))
 
 ;; FIXME: load error
-;; (require 'sb-mpfr)
-;; (defun sbcl-n-root (x n &optional (prec 1024))  
-;;   (sb-mpfr:coerce
-;;    (sb-mpfr:with-precision prec
-;;      (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
-;; 		     n))
-;;    'integer))
+;; (princ *package*)
+#+sbcl
+(require :sb-mpfr)
+#+sbcl
+(defun sbcl-n-root (x n &optional (prec 1024))
+  (sb-mpfr:coerce
+   (sb-mpfr:with-precision prec
+     (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
+		     n))
+   'integer))
 
 (defun n-root (x n)
   "Return nth root of x"
-  ;; #-sbcl
+  #-sbcl
   (round (expt x (/ 1d0 n)))
-  ;; #+sbcl  
-  ;; (sbcl-n-root x n)
+  #+sbcl
+  (sbcl-n-root x n)
   )
 
 ;;; low public exponent attack
@@ -127,7 +130,7 @@ calculate mod at every step of exp."
 		 sqrt-n
 		 (1+ sqrt-n)))))
     (loop for a from (init-a n) to (/ (+ n 6) 9)
-	  for square-b = (- (expt a 2) n) then (- (expt a 2) n)          
+	  for square-b = (- (expt a 2) n) then (- (expt a 2) n)
 	  when (perfect-square-p square-b)
 	    do (return (cons (+ a (isqrt square-b)) (- a (isqrt square-b)))))))
 
