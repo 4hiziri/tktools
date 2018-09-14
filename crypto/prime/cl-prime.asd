@@ -18,7 +18,7 @@
   :version "0.1"
   :author "4hiziri"
   :license ""
-  :depends-on ()
+  :depends-on (:cl-annot)
   :components ((:module "src"
                 :components
                 ((:file "cl-prime"))))
