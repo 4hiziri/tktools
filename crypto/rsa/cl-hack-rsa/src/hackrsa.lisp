@@ -85,25 +85,22 @@ calculate mod at every step of exp."
 	    ((< s2 0) (inner-solve c1 (mod-inv c2 n) s1 (- s2)))
 	    (t (inner-solve c1 c2 s1 s2))))))
 
-;; TODO: load error
-#+sbcl
-(print "Hello")
-#+sbcl
-(require 'sb-mpfr)
-#+sbcl
-(defun sbcl-n-root (x n &optional (prec 1024))  
-  (sb-mpfr:coerce
-   (sb-mpfr:with-precision prec
-     (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
-		     n))
-   'integer))
+;; FIXME: load error
+;; (require 'sb-mpfr)
+;; (defun sbcl-n-root (x n &optional (prec 1024))  
+;;   (sb-mpfr:coerce
+;;    (sb-mpfr:with-precision prec
+;;      (sb-mpfr:k-root (sb-mpfr:coerce x 'sb-mpfr:mpfr-float)
+;; 		     n))
+;;    'integer))
 
 (defun n-root (x n)
   "Return nth root of x"
-  #-sbcl
+  ;; #-sbcl
   (round (expt x (/ 1d0 n)))
-  #+sbcl  
-  (sbcl-n-root x n))
+  ;; #+sbcl  
+  ;; (sbcl-n-root x n)
+  )
 
 ;;; low public exponent attack
 @export
@@ -121,11 +118,18 @@ calculate mod at every step of exp."
 ;; fermat-rules
 @export
 (defun fermat-rules-attack (n)
-  (loop for x = (1+ (isqrt n)) then (if (< w 0) (1+ x) x)
-	for y = (isqrt (- (expt x 2) n)) then (if (> w 0) (1+ y) y)
-	for w = (- (expt x 2) (expt y 2) n)
-	when (= w 0)
-	  do (return (cons (+ x y) (- x y)))))
+  (flet ((init-a (n)
+	   ;; big-integer raise overflow at sqrt
+	   ;; but isqrt apply floor-function to answer
+	   ;; need check for apply ceil-function
+	   (let ((sqrt-n (isqrt n)))
+	     (if (perfect-square-p n)
+		 sqrt-n
+		 (1+ sqrt-n)))))
+    (loop for a from (init-a n) to (/ (+ n 6) 9)
+	  for square-b = (- (expt a 2) n) then (- (expt a 2) n)          
+	  when (perfect-square-p square-b)
+	    do (return (cons (+ a (isqrt square-b)) (- a (isqrt square-b)))))))
 
 ;; Two n are shared prime is contained, we can calculate other prime
 ;; GCD
