@@ -50,7 +50,6 @@
 
 ;; fermat-rules-attack
 (diag "Test: fermat-rules-attack")
-;; (skip 1 "Too much time")
 (subtest "fermat-rules-attack"
   (let* ((mid (* 2996863034895 (expt 2 12900)))
 	 (p (1+ mid))
