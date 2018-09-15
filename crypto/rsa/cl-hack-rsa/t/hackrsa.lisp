@@ -65,20 +65,20 @@
   (is (hackrsa::continued-fraction 4)
       '(4)))
 
-(subtest "const-continued-fraction"
-  (is (hackrsa::const-continued-fraction '(4))
+(subtest "get-continued-fraction"
+  (is (hackrsa::get-continued-fraction '(4))
       4)
-  (is (hackrsa::const-continued-fraction (hackrsa::continued-fraction 4/11))
+  (is (hackrsa::get-continued-fraction (hackrsa::continued-fraction 4/11))
       4/11)
-  (is (hackrsa::const-continued-fraction nil)
+  (is (hackrsa::get-continued-fraction nil)
       nil)
   (let ((d 10001)
 	(n 10002))
-    (is (hackrsa::const-continued-fraction (hackrsa::continued-fraction (/ d n)))
+    (is (hackrsa::get-continued-fraction (hackrsa::continued-fraction (/ d n)))
 	(/ d n))))
 
 (subtest "guess-f"
-  (let ((list (list 0 2 1 3)))    
+  (let ((list (list 0 2 1 3)))
     (is (hackrsa::guess-f list)
 	'(1 1/2 2/5 4/11))))
 
@@ -89,7 +89,7 @@
   (ok (not (hackrsa::perfect-square-p (1+ (expt 10001 2))))))
 
 (subtest "fast-perfect-square-p"
-  (let ((i (expt 10001 2)))    
+  (let ((i (expt 10001 2)))
     (is (hackrsa::perfect-square-p i)
 	(hackrsa::fast-perfect-square-p i))))
 
@@ -100,7 +100,7 @@
 (subtest "wiener-attack"
   (let ((e #x466a169e8c14ac89f39b5b0357effc3e2139f9b19e28c1e299f18b54952a07a932ba5ca9f4b93b3eaa5a12c4856981ee1a31a5b47a0068ff081fa3c8c2c546feaa3619fd6ec7dd71c9a2e75f1301ec935f7a5b744a73df34d21c47592e149074a3ccef749ece475e3b6b0c8eecac7c55290ff148e9a29db8480cfe2a57801275)
 	(n #x9C2F6505899120906E5AFBD755C92FEC429FBA194466F06AAE484FA33CABA720205E94CE9BF5AA527224916D1852AE07915FBC6A3A52045857E0A1224C72A360C01C0CEF388F1693A746D5AFBF318C0ABF027661ACAB54E0290DFA21C3616A498210E2578121D7C23877429331D428D756B957EB41ECAB1EAAD87018C6EA3445)
-	(d #x30273E11CBE5AE0CF9054376C76452F5EF9642C4A0D485FBE6AE6E808FF0E011))    
+	(d #x30273E11CBE5AE0CF9054376C76452F5EF9642C4A0D485FBE6AE6E808FF0E011))
     (is (wiener-attack n e)
 	d)))
 
@@ -123,16 +123,16 @@
 	   (* 15 3)))))
 
 ;; FIXME: too late
-(subtest "hastads-broadcast-attack"
-  (let* ((e 3)
-	 (nl '(770208589881542620069464504676753940863383387375206105769618980879024439269509554947844785478530186900134626128158103023729084548188699148790609927825292033592633940440572111772824335381678715673885064259498347
-	       106029085775257663206752546375038215862082305275547745288123714455124823687650121623933685907396184977471397594827179834728616028018749658416501123200018793097004318016219287128691152925005220998650615458757301
-	       982308372262755389818559610780064346354778261071556063666893379698883592369924570665565343844555904810263378627630061263713965527697379617881447335759744375543004650980257156437858044538492769168139674955430611))
-	 (m #xabcdef)
-	 (cl (mapcar (lambda (x) (mod (expt m 3) x))
-		     nl)))
-    (is (hastads-broadcast-attack nl e cl)
-	m)))
+;; (subtest "hastads-broadcast-attack"
+;;   (let* ((e 3)
+;; 	 (nl '(770208589881542620069464504676753940863383387375206105769618980879024439269509554947844785478530186900134626128158103023729084548188699148790609927825292033592633940440572111772824335381678715673885064259498347
+;; 	       106029085775257663206752546375038215862082305275547745288123714455124823687650121623933685907396184977471397594827179834728616028018749658416501123200018793097004318016219287128691152925005220998650615458757301
+;; 	       982308372262755389818559610780064346354778261071556063666893379698883592369924570665565343844555904810263378627630061263713965527697379617881447335759744375543004650980257156437858044538492769168139674955430611))
+;; 	 (m #xabcdef)
+;; 	 (cl (mapcar (lambda (x) (mod (expt m 3) x))
+;; 		     nl)))
+;;     (is (hastads-broadcast-attack nl e cl)
+;; 	m)))
 
 (diag "Test: misc")
 (subtest "private-key"
@@ -142,12 +142,12 @@
     (is (hackrsa:private-key e p q)
 	275)))
 
-(subtest "decrypto"
+(subtest "decrypt"
   (let ((n 377)
-        (d 275)       
+	(d 275)
 	(m 97)
 	(c 89))
-    (is (hackrsa:decrypto c d n)
+    (is (hackrsa:decrypt c d n)
 	m)))
 
 (finalize)
