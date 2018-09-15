@@ -120,8 +120,12 @@ calculate mod at every step of exp."
   (mod-inv e (* (1- p) (1- q))))
 
 @export
-(defun decrypto (c d n)
+(defun decrypt (c d n)
   (mod-expt c d n))
+
+@export
+(defun encrypt (m n e)
+  (mod-expt m e n))
 
 ;; Util
 (defun zip (al bl) ;; TODO: extract util or search
