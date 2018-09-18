@@ -43,7 +43,8 @@
       (subseq sequence 0 (- (length sequence) (length suffix)))
       sequence))
 
-(defun validate-pem (pem) 
+;; TODO: if private, work. but public doesn't. need fix.
+(defun validate-pem (pem)  
   (let ((header "-----BEGIN RSA PRIVATE KEY-----")
 	(footer "-----END RSA PRIVATE KEY-----")
 	(pem (string-trim '(#\newline) pem)))
