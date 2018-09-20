@@ -18,7 +18,7 @@
   :version "0.1"
   :author "4hiziri"
   :license ""
-  :depends-on (:cl-annot :cl-prime :alexandria :cl-base64)
+  :depends-on (:cl-annot :cl-prime :alexandria :cl-base64 :split-sequence)
   :components ((:module "src" :serial t
                 :components
                 ((:file "hackrsa")
@@ -27,7 +27,8 @@
 		 (:file "fermat-rules-attack")
 		 (:file "wiener-attack")
 		 (:file "hastads-broadcast-attack")
-		 (:file "pem"))))
+		 (:file "pem")
+		 (:file "asp1"))))
   :description "tool for attacking rsa"
   :long-description
   #.(with-open-file (stream (merge-pathnames
