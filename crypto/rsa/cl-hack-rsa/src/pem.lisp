@@ -47,14 +47,28 @@
       (subseq sequence 0 (- (length sequence) (length suffix)))
       sequence))
 
-(defun is-pem (pem)
+(defun pem-p (pem)
   (let ((lines (split-sequence:split-sequence #\newline pem)))    
     (and (alexandria:starts-with-subseq "-----BEGIN" (car lines))
 	 (alexandria:starts-with-subseq "-----END" (car (last lines))))))
 
+(defun pem-type-p (pem type)
+  (let ((header (car (split-sequence:split-sequence #\newline pem)))
+	(type-header (cond ((eq type 'rsa-private)
+			    "-----BEGIN RSA PRIVATE KEY-----")
+			   ((eq type 'public)
+			    "-----BEGIN PUBLIC KEY-----"))))
+    (string= header type-header)))
+
+(defun rsa-private-pem-p (pem)
+  (pem-type-p pem 'rsa-private))
+
+(defun rsa-public-pem-p (pem)
+  (pem-type-p pem 'public))
+
 ;; TODO: if private, work. but public doesn't. need fix.
 (defun extract-pem (pem)
-  (if (is-pem pem)
+  (if (pem-p pem)
       (let* ((lines (split-sequence:split-sequence #\newline pem))
 	     (header (car lines))
 	     (footer (last lines))
@@ -79,5 +93,7 @@
 @export
 (defun read-pem (filepath)
   (with-open-file (in filepath)
-    (let ((der (coerce (parse-pem (read-string in)) 'list)))
-      (list2rsa-key (car (parse-der der))))))
+    (let* ((pem (read-string in))
+	   (der (coerce (parse-pem pem) 'list))
+	   (asp1-data (parse-der der)))
+      asp1-data)))
