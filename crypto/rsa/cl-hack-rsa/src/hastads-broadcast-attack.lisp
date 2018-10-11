@@ -2,32 +2,26 @@
 
 (cl-annot:enable-annot-syntax)
 
-;; Too late, need optimization
-
 (defun chinese-remainder-theorem (n_list a_list)
   "a0 = x mod n0
    ...
    ai = x mod ni
-
    return x mod n0 * n1 * ... * ni"
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (labels ((congruence-one (n modular)
 	     (let ((egcd (extend-gcd modular n)))
-	       (* n (third egcd))))
-	   (positivate (n adder)
-	     (if (> n 0)
-		 n
-		 (positivate (+ n adder) adder))))
+	       (* n (third egcd)))))
     (let ((reduced (reduce #'* n_list)))
-      (positivate
-       (reduce #'+
-	       (mapcar (lambda (xa) (* (first xa)
-				       (rest xa)))
-		       (zip (mapcar (lambda (n) (congruence-one (/ reduced n) n))
-				    n_list)
-			    a_list)))
-       reduced))))
+      (mod (reduce (lambda (acc xa)
+		     (+ acc
+			(* (congruence-one (/ reduced (first xa)) (first xa))
+			   (rest xa))))
+		   (zip n_list a_list)
+		   :initial-value 0)
+	   reduced))))
 
 @export
 (defun hastads-broadcast-attack (n_list e c_list)
+  (declare (optimize (speed 3) (safety 0) (space 0) (debug 0)))
   (let ((me (chinese-remainder-theorem n_list c_list)))
     (round (n-root me e))))
